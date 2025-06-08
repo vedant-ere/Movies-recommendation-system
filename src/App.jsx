@@ -47,9 +47,26 @@ function App() {
       setisLoading(false);
     }
   };
+
+  const searchMovies = async (query) => {
+
+    try{
+        const endpoint = `${API_BASE_URL}/search/movie?query=${query}`
+        const response = await fetch(endpoint, API_OPTIONS)
+
+        const data = response.json()
+    } catch(error){
+        console.log(error)
+    }
+  }
   useEffect(() => {
     fecthMovieData();
+    
   }, []);
+  useEffect(() => {
+    searchMovies()
+
+  }, [searchTerm]);
   return (
     <main>
       <div className="pattern" />

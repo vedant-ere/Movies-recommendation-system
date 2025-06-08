@@ -18,6 +18,8 @@ const MovieCard = ({
                 <p>{vote_average ? vote_average.toFixed(1) : null}</p>
                 <span>•</span>
                 <p><div className="lang">{original_language}</div></p>
+                <span>•</span>
+                <p>{release_date ? release_date.split("-")[0] : 'N/A'}</p>
             </div>
         </div>
       </div>

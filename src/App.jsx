@@ -4,7 +4,7 @@ import Spinner from "./components/Spinner";
 import MovieCard from "./components/MovieCard";
 import { useDebounce } from "use-debounce";
 import { Listbox } from "@headlessui/react";
-import { updateSearchCount } from "./appwrite.js";
+import { fetchTrendingMovies, updateSearchCount } from "./appwrite.js";
 
 const API_BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -26,6 +26,7 @@ function App() {
 
   const [genres, setGenres] = useState([]);
   const [selectedGenre, setSelectedGenre] = useState("");
+  const [trendingMovies, setTrendingMovies] = useState([])
 
   useEffect(() => {
     const fetchGenres = async () => {
@@ -67,11 +68,15 @@ function App() {
       console.log(data);
       if (data.response == "False") {
         setErrorMessage(data.Error || "Failed to fetch Movies");
-        setMoviesList([]);
+        setMoviesList([])
         return;
       }
+    
       setMoviesList(data.results);
-      updateSearchCount()
+      if(query && data.results.length > 0){
+        await updateSearchCount(query, data.results[0])
+      }
+
     } catch (error) {
       console.log(`Error fetching movies ${error}`);
       setErrorMessage(`Error fetching movies. Please try again later`);
@@ -79,6 +84,16 @@ function App() {
       setisLoading(false);
     }
   };
+
+  const loadTrendingMovies = async () => {
+    try {
+      const movies = await fetchTrendingMovies()
+      console.log(movies + "trending movies array")
+      setTrendingMovies(movies)
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   //? Wrong behaviour written only for learning
   //   const searchMovies = async (query) => {
@@ -99,8 +114,12 @@ function App() {
   //   };
 
   useEffect(() => {
-    fecthMovieData(deBouncedSearchTerm);
+    fecthMovieData(deBouncedSearchTerm); // Didnt called loadtrendingmovies here bcoz we dont want it load everytime just at the starting of the application 
   }, [deBouncedSearchTerm]);
+
+  useEffect(() => {
+    loadTrendingMovies();
+  }, [])
 
   useEffect(() => {
     if (!searchTerm) {
@@ -166,7 +185,19 @@ function App() {
             </div>
           </Listbox>
         </header>
-
+                {trendingMovies.length > 0 && (
+                  <section className="trending">
+                    <h2>Treding Movies</h2>
+                    <ul>
+                      {trendingMovies.map((movie, index) => (
+                        <li className="" key={movie.$id}>
+                          <p className="">{index + 1}</p>
+                          <img src={movie.poster_url} alt="" />
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
         <section className="all-movies">
           <h2 className="mt-[40px]">All Movies</h2>
           {isLoading ? (
